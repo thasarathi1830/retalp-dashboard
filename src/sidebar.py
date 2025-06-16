@@ -1,28 +1,30 @@
 import streamlit as st
 
 def render_sidebar():
-    st.sidebar.title("📊 EDA Dashboard")
+    st.sidebar.image(
+        "https://streamlit.io/images/brand/streamlit-logo-secondary-colormark-darktext.png", 
+        use_container_width=True  # Updated for Streamlit deprecation warning
+    )
+    st.sidebar.title("Retalp EDA Dashboard")
     st.sidebar.markdown(
         """
-        Welcome!  
-        Upload your data file and explore automated EDA.
-
-        **Features:**
-        - Upload CSV, Excel, or ODS files
-        - Automated profiling & visualizations
-        - Download EDA report as PDF
+        **Navigation**
+        - Data Overview
+        - Data Cleaning
+        - Outlier Detection
+        - Visualizations
+        - Full Report
         """
     )
-
     st.sidebar.markdown("---")
-    st.sidebar.header("Upload Data")
     uploaded_file = st.sidebar.file_uploader(
-        "Choose a data file",
-        type=["csv", "xlsx", "xls", "ods"],
-        help="Supported formats: CSV, XLSX, XLS, ODS"
+        "Upload your data file",
+        type=["csv", "xlsx", "xls", "ods"]
     )
     st.sidebar.markdown("---")
-
-    
-
+    st.sidebar.info("Tip: Use the navigation menu above to explore different EDA tools.")
     return uploaded_file
+
+
+
+

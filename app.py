@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from ydata_profiling import ProfileReport
-from streamlit_pandas_profiling import st_profile_report
 from pathlib import Path
+import streamlit.components.v1 as components
 from src.sidebar import render_sidebar
 
 st.set_page_config(page_title="Retalp EDA Dashboard", layout="wide")
@@ -13,7 +13,6 @@ Path("data").mkdir(exist_ok=True)
 Path("output").mkdir(exist_ok=True)
 
 def load_data(file_path):
-    # Try CSV with multiple encodings
     if str(file_path).lower().endswith('.csv'):
         encodings = ['utf-8', 'utf-16', 'latin1', 'cp1252']
         for enc in encodings:
@@ -22,7 +21,6 @@ def load_data(file_path):
             except Exception:
                 continue
         raise ValueError("Could not read CSV file with common encodings.")
-    # Try Excel with all major engines
     elif str(file_path).lower().endswith('.xlsx'):
         try:
             return pd.read_excel(file_path, engine='openpyxl')
@@ -68,7 +66,6 @@ section = st.sidebar.radio(
 if df is not None:
     st.title("📊 Retalp EDA Dashboard")
 
-    # --- Data Overview ---
     if section == "Data Overview":
         st.header("🔍 Data Overview")
         st.write("**Shape:**", df.shape)
@@ -79,10 +76,8 @@ if df is not None:
         st.write("**Missing Values:**")
         st.dataframe(df.isnull().sum().to_frame("Missing Count"))
 
-    # --- Data Cleaning ---
     elif section == "Data Cleaning":
         st.header("🧹 Data Cleaning")
-        st.write("Remove columns, fill missing values, and preview changes.")
         cols = st.multiselect("Select columns to drop", df.columns)
         if cols:
             df = df.drop(columns=cols)
@@ -95,14 +90,13 @@ if df is not None:
                 elif fill_option == "Fill with median":
                     df[col].fillna(df[col].median(), inplace=True)
                 elif fill_option == "Fill with mode":
-                    df[col].fillna(df[col].mode(), inplace=True)
+                    df[col].fillna(df[col].mode()[0], inplace=True)
             if fill_option == "Drop rows with NA":
                 df.dropna(inplace=True)
             st.success(f"Missing values handled: {fill_option}")
         st.dataframe(df.head(10))
         st.session_state.df = df
 
-    # --- Outlier Detection ---
     elif section == "Outlier Detection":
         st.header("🔎 Outlier Detection & Handling")
         num_cols = df.select_dtypes(include=np.number).columns.tolist()
@@ -127,7 +121,6 @@ if df is not None:
         else:
             st.info("No numeric columns for outlier detection.")
 
-    # --- Visualizations ---
     elif section == "Visualizations":
         st.header("📈 Visualizations")
         plot_type = st.selectbox("Choose plot type", ["Bar Plot", "Histogram", "Box Plot", "Scatter Plot", "Correlation Heatmap"])
@@ -178,15 +171,15 @@ if df is not None:
             else:
                 st.info("Need at least two numeric columns for heatmap.")
 
-    # --- Full Report ---
     elif section == "Full Report":
         st.header("🤖 Automated EDA Report")
         if st.button("Generate and Show Report"):
             with st.spinner("Generating report..."):
                 profile = ProfileReport(df, title="Full EDA Report", explorative=True)
-                st_profile_report(profile)
+                components.html(profile.to_html(), height=1000, scrolling=True)
 else:
     st.info("👈 Upload a file from the sidebar to start.")
+
 
 
 
